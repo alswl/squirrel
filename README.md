@@ -97,18 +97,18 @@
 
 程序設計：
 
-  * 佛振 <chen.sst@gmail.com>
-  * Linghua Zhang <linghua.zhang@me.com>
-  * Chongyu Zhu <lembacon@gmail.com>
-  * 雪齋 <lyc20041@gmail.com>
-  * faberii <ofaberii@gmail.com>
-  * Chun-wei Kuo <Dendoh@gmail.com>
-  * Junlu Cheng <frank4565@gmail.com>
-  * Jak Wings <jakwings@gmail.com>
+  * 佛振
+  * Linghua Zhang
+  * Chongyu Zhu
+  * 雪齋
+  * faberii
+  * Chun-wei Kuo
+  * Junlu Cheng
+  * Jak Wings
 
 美術：
 
-  * 圖標設計 佛振、梁海
+  * 圖標設計 佛振、梁海、雨過之後
   * 配色方案 Aben、Chongyu Zhu、skoj、佛振
 
 本品引用了以下開源軟件：
@@ -118,7 +118,6 @@
   * darts-clone  (New BSD License)
   * google-glog  (New BSD License)
   * Google Test  (New BSD License)
-  * Growl  (BSD License)
   * LevelDB  (New BSD License)
   * librime  (New BSD License)
   * OpenCC / 開放中文轉換  (Apache License 2.0)
@@ -139,7 +138,5 @@ https://github.com/rime/home/issues
 
 技術交流，歡迎光臨 [Rime 代碼之家](https://github.com/rime/home)，
 或致信 Rime 開發者 <rimeime@gmail.com>。
-
-圍繞 Rime 的用法及相關話題，歡迎來訪 Rime 網站參加 [線上討論](http://rime.im/discuss/)。
 
 謝謝

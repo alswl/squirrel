@@ -1,11 +1,11 @@
-.PHONY: all install librime data update_brise update_opencc_data deps release debug clean
+.PHONY: all install librime data update-brise update-opencc-data deps release debug package archive test-archive permission-check install-debug install-release clean
 
 all: release
 install: install-release
 
 LIBRIME = lib/librime.1.dylib
 LIBRIME_DEPS = librime/thirdparty/lib/libmarisa.a librime/thirdparty/lib/libleveldb.a librime/thirdparty/lib/libopencc.a librime/thirdparty/lib/libyaml-cpp.a
-BRISE = data/brise/default.yaml data/brise/symbols.yaml data/brise/essay.txt
+BRISE = bin/rime-install data/brise/default.yaml data/brise/symbols.yaml data/brise/essay.txt
 OPENCC_DATA = data/opencc/TSCharacters.ocd data/opencc/TSPhrases.ocd data/opencc/t2s.json
 DEPS = $(LIBRIME) $(BRISE) $(OPENCC_DATA)
 
@@ -15,6 +15,7 @@ RIME_BIN_DEPLOYER = rime_deployer
 RIME_BIN_DICT_MANAGER = rime_dict_manager
 OPENCC_DATA_OUTPUT = librime/thirdparty/data/opencc/*.*
 DATA_FILES = brise/output/*.*
+RIME_PACKAGE_INSTALLER = brise/rime-install
 
 INSTALL_NAME_TOOL = $(shell xcrun -find install_name_tool)
 INSTALL_NAME_TOOL_ARGS = -add_rpath @loader_path/../Frameworks
@@ -26,10 +27,10 @@ $(LIBRIME_DEPS):
 	$(MAKE) -C librime -f Makefile.xcode thirdparty
 
 $(BRISE):
-	$(MAKE) update_brise
+	$(MAKE) update-brise
 
 $(OPENCC_DATA):
-	$(MAKE) update_opencc_data
+	$(MAKE) update-opencc-data
 
 librime: $(LIBRIME_DEPS)
 	$(MAKE) -C librime -f Makefile.xcode release
@@ -39,14 +40,15 @@ librime: $(LIBRIME_DEPS)
 	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/$(RIME_BIN_DEPLOYER)
 	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/$(RIME_BIN_DICT_MANAGER)
 
-data: update_brise update_opencc_data
+data: update-brise update-opencc-data
 
-update_brise:
-	$(MAKE) -C brise preset
+update-brise:
+	$(MAKE) -C brise minimal
 	mkdir -p data/brise
 	cp $(DATA_FILES) data/brise/
+	cp $(RIME_PACKAGE_INSTALLER) bin/
 
-update_opencc_data:
+update-opencc-data:
 	$(MAKE) -C librime -f Makefile.xcode thirdparty/opencc
 	mkdir -p data/opencc
 	cp $(OPENCC_DATA_OUTPUT) data/opencc/
@@ -55,26 +57,34 @@ deps: librime data
 
 release: $(DEPS)
 	xcodebuild -project Squirrel.xcodeproj -configuration Release build | grep -v setenv | tee build.log
-	rm -f build/Squirrel.app
-	cd build ; ln -s Release/Squirrel.app Squirrel.app
 
 debug: $(DEPS)
 	xcodebuild -project Squirrel.xcodeproj -configuration Debug build | grep -v setenv | tee build.log
-	rm -f build/Squirrel.app
-	cd build ; ln -s Debug/Squirrel.app Squirrel.app
 
-SQUIRREL_APP_PATH = /Library/Input Methods/Squirrel.app
+package: release
+	bash package/make_package
 
-install-debug:
-	rm -rf "$(SQUIRREL_APP_PATH)/Contents/Frameworks"
-	rm -rf "$(SQUIRREL_APP_PATH)/Contents/MacOS"
-	cp -R build/Debug/Squirrel.app "/Library/Input Methods"
-	"$(SQUIRREL_APP_PATH)/Contents/Resources/postflight"
+archive: package
+	bash package/create_archive
 
-install-release:
-	rm -rf "$(SQUIRREL_APP_PATH)"
-	cp -R build/Release/Squirrel.app "/Library/Input Methods"
-	"$(SQUIRREL_APP_PATH)/Contents/Resources/postflight"
+test-archive: package
+	testing=1 bash package/create_archive
+
+DSTROOT = /Library/Input Methods
+SQUIRREL_APP_ROOT = $(DSTROOT)/Squirrel.app
+
+permission-check:
+	[ -w "$(DSTROOT)" ] && [ -w "$(SQUIRREL_APP_ROOT)" ] || sudo chown -R ${USER} "$(DSTROOT)"
+
+install-debug: debug permission-check
+	rm -rf "$(SQUIRREL_APP_ROOT)"
+	cp -R build/Debug/Squirrel.app "$(DSTROOT)"
+	DSTROOT="$(DSTROOT)" RIME_NO_PREBUILD=1 bash scripts/postinstall
+
+install-release: release permission-check
+	rm -rf "$(SQUIRREL_APP_ROOT)"
+	cp -R build/Release/Squirrel.app "$(DSTROOT)"
+	DSTROOT="$(DSTROOT)" bash scripts/postinstall
 
 clean:
 	rm -rf build > /dev/null 2>&1 || true
