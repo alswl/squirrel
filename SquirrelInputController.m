@@ -159,20 +159,20 @@
 
   // TODO add special key event postprocessing here
 
-  if (!handled) {
-    BOOL isVimBackInCommandMode = rime_keycode == XK_Escape ||
-    ((rime_modifiers & kControlMask) && (rime_keycode == XK_c ||
-                                         rime_keycode == XK_C ||
-                                         rime_keycode == XK_bracketleft));
-    if (isVimBackInCommandMode) {
-      NSString* app = [_currentClient bundleIdentifier];
-      if ([app isEqualToString:@"org.vim.MacVim"] &&
-          !rime_get_api()->get_option(_session, "ascii_mode")) {
-        rime_get_api()->set_option(_session, "ascii_mode", True);
-        NSLog(@"disable conversion to Chinese in MacVim's command mode");
-      }
-    }
-  }
+  //if (!handled) {
+    //BOOL isVimBackInCommandMode = rime_keycode == XK_Escape ||
+    //((rime_modifiers & kControlMask) && (rime_keycode == XK_c ||
+                                         //rime_keycode == XK_C ||
+                                         //rime_keycode == XK_bracketleft));
+    //if (isVimBackInCommandMode) {
+      //NSString* app = [_currentClient bundleIdentifier];
+      //if ([app isEqualToString:@"org.vim.MacVim"] &&
+          //!rime_get_api()->get_option(_session, "ascii_mode")) {
+        //rime_get_api()->set_option(_session, "ascii_mode", True);
+        //NSLog(@"disable conversion to Chinese in MacVim's command mode");
+      //}
+    //}
+  //}
 
   // Simulate key-ups for every interesting key-down for chord-typing.
   if (handled) {
