@@ -15,6 +15,7 @@ static NSString *const kDefaultCandidateFormat = @"%c. %@";
 
 @property(nonatomic, strong) NSColor *backgroundColor;
 @property(nonatomic, assign) double cornerRadius;
+@property(nonatomic, assign) double hilitedCornerRadius;
 @property(nonatomic, assign) NSSize edgeInset;
 @property(nonatomic, strong) NSColor *highlightedStripColor;
 
@@ -57,27 +58,56 @@ static NSString *const kDefaultCandidateFormat = @"%c. %@";
 
 - (void)drawRect:(NSRect)dirtyRect {
   if (self.highlightedStripColor && !NSIsEmptyRect(self.highlightedRect)) {
-    CGFloat edgeWidth = self.edgeInset.width + 1;
-    CGFloat edgeHeight = self.edgeInset.height + 1;
+    // setFrame rounds up floating point numbers in window bounds.
+    // Add extra width and height to overcome rounding errors and ensure
+    // highlighted area fully covers paddings near right and top edges.
+    const CGFloat ROUND_UP = 1;
+    CGFloat corner = self.hilitedCornerRadius / 2;
+    CGFloat edgeWidth = self.edgeInset.width;
+    CGFloat edgeHeight = self.edgeInset.height;
     NSRect stripRect = self.highlightedRect;
-    if (NSMinX(stripRect) - FLT_EPSILON < 0) {
-      stripRect.size.width += edgeWidth;
+    if (NSMinX(stripRect) < FLT_EPSILON) {
+      if (corner == 0) {
+        stripRect.size.width += edgeWidth;
+      } else {
+        stripRect.size.width += corner;
+        stripRect.origin.x += edgeWidth - corner;
+      }
     } else {
       stripRect.origin.x += edgeWidth;
     }
-    if (NSMaxX(stripRect) + FLT_EPSILON > NSWidth(self.bounds) - edgeWidth) {
-      stripRect.size.width += edgeWidth;
+    if (NSMaxX(stripRect) + edgeWidth + ROUND_UP > NSWidth(self.bounds)) {
+      if (corner == 0) {
+        stripRect.size.width += edgeWidth + ROUND_UP;
+      } else {
+        stripRect.size.width += corner;
+      }
     }
-    if (NSMinY(stripRect) - FLT_EPSILON < 0) {
-      stripRect.size.height += edgeHeight;
+    if (NSMinY(stripRect) < FLT_EPSILON) {
+      if (corner == 0) {
+        stripRect.size.height += edgeHeight;
+      } else {
+        stripRect.size.height += corner;
+        stripRect.origin.y += edgeHeight - corner;
+      }
     } else {
       stripRect.origin.y += edgeHeight;
     }
-    if (NSMaxY(stripRect) + FLT_EPSILON > NSHeight(self.bounds) - edgeHeight) {
-      stripRect.size.height += edgeHeight;
+    if (NSMaxY(stripRect) + edgeHeight + ROUND_UP > NSHeight(self.bounds)) {
+      if (corner == 0) {
+        stripRect.size.height += edgeHeight + ROUND_UP;
+      } else {
+        stripRect.size.height += corner;
+      }
     }
     [self.highlightedStripColor setFill];
-    NSRectFill(stripRect);
+    if (self.hilitedCornerRadius > 0) {
+      [[NSBezierPath bezierPathWithRoundedRect:stripRect
+                                       xRadius:self.hilitedCornerRadius
+                                       yRadius:self.hilitedCornerRadius] fill];
+    } else {
+      NSRectFill(stripRect);
+    }
   }
 
   [_text drawAtPoint:NSMakePoint(self.edgeInset.width, self.edgeInset.height)];
@@ -111,27 +141,27 @@ static NSString *const kDefaultCandidateFormat = @"%c. %@";
   _attrs = [[NSMutableDictionary alloc] init];
   _attrs[NSForegroundColorAttributeName] = [NSColor controlTextColor];
   _attrs[NSFontAttributeName] = [NSFont userFontOfSize:kDefaultFontSize];
-  
+
   _highlightedAttrs = [[NSMutableDictionary alloc] init];
   _highlightedAttrs[NSForegroundColorAttributeName] = [NSColor selectedControlTextColor];
   //_highlightedAttrs[NSBackgroundColorAttributeName] = [NSColor selectedTextBackgroundColor];
   _highlightedAttrs[NSFontAttributeName] = [NSFont userFontOfSize:kDefaultFontSize];
-  
+
   _labelAttrs = [_attrs mutableCopy];
   _labelHighlightedAttrs = [_highlightedAttrs mutableCopy];
-  
+
   _commentAttrs = [[NSMutableDictionary alloc] init];
   _commentAttrs[NSForegroundColorAttributeName] = [NSColor disabledControlTextColor];
   _commentAttrs[NSFontAttributeName] = [NSFont userFontOfSize:kDefaultFontSize];
-  
+
   _commentHighlightedAttrs = [_commentAttrs mutableCopy];
   //_commentHighlightedAttrs[NSBackgroundColorAttributeName] =
   //    [NSColor selectedTextBackgroundColor];
-  
+
   _preeditAttrs = [[NSMutableDictionary alloc] init];
   _preeditAttrs[NSForegroundColorAttributeName] = [NSColor disabledControlTextColor];
   _preeditAttrs[NSFontAttributeName] = [NSFont userFontOfSize:kDefaultFontSize];
-  
+
   _preeditHighlightedAttrs = [[NSMutableDictionary alloc] init];
   _preeditHighlightedAttrs[NSForegroundColorAttributeName] = [NSColor controlTextColor];
   _preeditHighlightedAttrs[NSFontAttributeName] = [NSFont userFontOfSize:kDefaultFontSize];
@@ -545,6 +575,7 @@ static NSFontDescriptor *getFontDescriptor(NSString *fullname) {
   NSColor *highlightedCandidateLabelColor = [config getColor:@"style/label_hilited_color"];
   CGFloat alpha = fmin(fmax([config getDouble:@"style/alpha"], 0.0), 1.0);
   CGFloat cornerRadius = [config getDouble:@"style/corner_radius"];
+  CGFloat hilitedCornerRadius = [config getDouble:@"style/hilited_corner_radius"];
   CGFloat borderHeight = [config getDouble:@"style/border_height"];
   CGFloat borderWidth = [config getDouble:@"style/border_width"];
   CGFloat lineSpacing = [config getDouble:@"style/line_spacing"];
@@ -659,6 +690,11 @@ static NSFontDescriptor *getFontDescriptor(NSString *fullname) {
           [config getOptionalDouble:[prefix stringByAppendingString:@"/corner_radius"]];
       if (cornerRadiusOverridden) {
         cornerRadius = cornerRadiusOverridden.doubleValue;
+      }
+      NSNumber *hilitedCornerRadiusOverridden =
+          [config getOptionalDouble:[prefix stringByAppendingString:@"/hilited_corner_radius"]];
+      if (hilitedCornerRadiusOverridden) {
+        hilitedCornerRadius = hilitedCornerRadiusOverridden.doubleValue;
       }
       NSNumber *borderHeightOverridden =
           [config getOptionalDouble:[prefix stringByAppendingString:@"/border_height"]];
@@ -780,6 +816,7 @@ static NSFontDescriptor *getFontDescriptor(NSString *fullname) {
   }
 
   _view.cornerRadius = cornerRadius;
+  _view.hilitedCornerRadius = hilitedCornerRadius;
   _view.edgeInset = NSMakeSize(MAX(borderWidth, cornerRadius), MAX(borderHeight, cornerRadius));
 
   _window.alphaValue = (alpha == 0) ? 1.0 : alpha;
