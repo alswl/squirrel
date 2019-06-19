@@ -1,4 +1,3 @@
-
     鼠鬚管
     爲物雖微情不淺
     新詩醉墨時一揮
@@ -6,17 +5,20 @@
 
     　　——歐陽修
 
-今由　[中州韻輸入法引擎／Rime Input Method Engine](http://rime.im)
+今由　[中州韻輸入法引擎／Rime Input Method Engine](https://rime.im)
 及其他開源技術強力驅動
 
-【鼠鬚管】輸入法 0.9
+【鼠鬚管】輸入法
 ===
+[![Download](https://api.bintray.com/packages/rime/squirrel/release/images/download.svg)](https://bintray.com/rime/squirrel/release/_latestVersion)
+[![Build Status](https://travis-ci.org/rime/squirrel.svg)](https://travis-ci.org/rime/squirrel)
+[![GitHub Tag](https://img.shields.io/github/tag/rime/squirrel.svg)](https://github.com/rime/squirrel)
 
 式恕堂 版權所無
 
 授權條款：[GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-項目主頁：[rime.im](http://rime.im)
+項目主頁：[rime.im](https://rime.im)
 
 您可能還需要 Rime 用於其他操作系統的發行版：
 
@@ -26,7 +28,7 @@
 安裝輸入法
 ---
 
-本品適用於 64 位 Mac OS X 10.7+
+本品適用於 64 位 macOS 10.7+
 
 初次安裝，如果在部份應用程序中打不出字，請註銷並重新登錄。
 
@@ -39,7 +41,7 @@
 定製輸入法
 ---
 
-定製方法，請參考線上 [幫助文檔](http://rime.im/docs/)。
+定製方法，請參考線上 [幫助文檔](https://rime.im/docs/)。
 
 使用系統輸入法菜單：
 
