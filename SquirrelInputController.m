@@ -302,19 +302,10 @@
   //  - FIXME: chrome's address bar issues this callback when showing suggestions.
   /* if ([[sender bundleIdentifier] isEqualToString:@"com.google.Chrome"])
     return; */
-  // https://github.com/rime/squirrel/issues/146
   // force committing existing Rime composition
-  // commit raw text
-  //BOOL isAsciiMode = rime_get_api()->get_option(_session, "ascii_mode");
-  //if(!isAsciiMode){
-    //rime_get_api()->set_option(_session, "ascii_mode", True);
-  //}
   if (_session && rime_get_api()->commit_composition(_session)) {
     [self rimeConsumeCommittedText];
   }
-  //if(!isAsciiMode){
-    //rime_get_api()->set_option(_session, "ascii_mode", False);
-  //}
 }
 
 // a piece of comment from SunPinyin's macos wrapper says:
