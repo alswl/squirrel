@@ -162,18 +162,16 @@
   // disable MacVim special event
   /**
   if (!handled) {
-	BOOL isVimBackInCommandMode = rime_keycode == XK_Escape ||
-	((rime_modifiers & kControlMask) && (rime_keycode == XK_c ||
-										 rime_keycode == XK_C ||
-										 rime_keycode == XK_bracketleft));
-	if (isVimBackInCommandMode) {
-	  NSString* app = [_currentClient bundleIdentifier];
-	  if ([app isEqualToString:@"org.vim.MacVim"] &&
-		  !rime_get_api()->get_option(_session, "ascii_mode")) {
-		rime_get_api()->set_option(_session, "ascii_mode", True);
-		NSLog(@"disable conversion to Chinese in MacVim's command mode");
-	  }
-	}
+    BOOL isVimBackInCommandMode = rime_keycode == XK_Escape ||
+    ((rime_modifiers & kControlMask) && (rime_keycode == XK_c ||
+                                         rime_keycode == XK_C ||
+                                         rime_keycode == XK_bracketleft));
+    if (isVimBackInCommandMode &&
+        rime_get_api()->get_option(_session, "vim_mode") &&
+        !rime_get_api()->get_option(_session, "ascii_mode")) {
+      rime_get_api()->set_option(_session, "ascii_mode", True);
+      // NSLog(@"turned Chinese mode off in vim-like editor's command mode");
+    }
   }
   **/
 
@@ -298,10 +296,9 @@
 -(void)commitComposition:(id)sender
 {
   //NSLog(@"commitComposition:");
-  // The issue of address bar in Chrome does not exist anymore (version 47)
-  //  - FIXME: chrome's address bar issues this callback when showing suggestions.
-  /* if ([[sender bundleIdentifier] isEqualToString:@"com.google.Chrome"])
-    return; */
+  // - FIXME: chrome's address bar issues this callback when showing suggestions.
+  if ([[sender bundleIdentifier] isEqualToString:@"com.google.Chrome"])
+    return;
   // force committing existing Rime composition
   if (_session && rime_get_api()->commit_composition(_session)) {
     [self rimeConsumeCommittedText];
