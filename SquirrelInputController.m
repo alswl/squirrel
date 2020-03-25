@@ -159,6 +159,8 @@
 
   // TODO add special key event postprocessing here
 
+  // disable MacVim special event
+  /**
   if (!handled) {
     BOOL isVimBackInCommandMode = rime_keycode == XK_Escape ||
     ((rime_modifiers & kControlMask) && (rime_keycode == XK_c ||
@@ -171,6 +173,7 @@
       // NSLog(@"turned Chinese mode off in vim-like editor's command mode");
     }
   }
+  **/
 
   // Simulate key-ups for every interesting key-down for chord-typing.
   if (handled) {
